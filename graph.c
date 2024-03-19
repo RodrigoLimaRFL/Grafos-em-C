@@ -4,7 +4,7 @@
 #include "graph.h"
 #include <limits.h>
 
-#define NEUTRAL_ELEMENT 0
+#define NEUTRAL_ELEMENT -1
 
 struct graph_{
     int **matriz;
@@ -126,6 +126,7 @@ bool add_vertex(GRAPH *graph, int vertice01){
     // coloca o valor do vertice como true
     graph->vertices[vertice01] = true;
     graph->numVertices++;
+    printf("Vertice %d adicionado\n", vertice01);
     return true;
 }
 
@@ -139,9 +140,11 @@ bool add_edge(GRAPH *graph, int vertice01, int vertice02, int peso){
     if (exist_vertex(graph, vertice01) && exist_vertex(graph, vertice02)){
         graph->matriz[vertice01][vertice02] = peso;
         graph->matriz[vertice02][vertice01] = peso;
+        printf("Aresta %d %d adicionada com sucesso\n", vertice01, vertice02);
         return true;
     }
     else{
+        printf("Aresta não adicionada\n");
         return false;
     }
 }
@@ -149,13 +152,16 @@ bool add_edge(GRAPH *graph, int vertice01, int vertice02, int peso){
 
 bool exist_edge(GRAPH *graph, int vertice01, int vertice02){
     if(exist_vertex(graph, vertice01) == false || exist_vertex(graph, vertice02) == false){
+        printf("Um de seus vértices não existe, tente novamente. ");
         return false;
     }
 
     if(graph->matriz[vertice01][vertice02] != NEUTRAL_ELEMENT){
         return true;
+        //printf("Essa aresta existe");
     }
     else{
+        //printf("Essa aresta não existe");
         return false;
     }
 }
@@ -179,12 +185,7 @@ int* get_adj_vertex(GRAPH *graph, int vertice01){
             contador++;
         }
     }
-
-    if((adjacentes = (int *) realloc(adjacentes, contador*sizeof(int))) == NULL){
-        printf("Não foi possível alocar memória\n");
-        exit(1);
-    }
-
+    
     for(int i = 0; i<contador; i++){
         printf("%d ", adjacentes[i]);
     }
@@ -202,6 +203,7 @@ bool remove_edge(GRAPH *graph, int vertice01, int vertice02){
 
     graph->matriz[vertice01][vertice02] = NEUTRAL_ELEMENT;
     graph->matriz[vertice02][vertice01] = NEUTRAL_ELEMENT;
+    printf("Aresta %d %d removida\n", vertice01, vertice02);
     return true;
 }
 
@@ -237,10 +239,14 @@ int number_of_vertexs(GRAPH *graph){
 bool remove_graph(GRAPH **graph){
     for(int i = 0; i<(*graph)->tamanho; i++){
         free((*graph)->matriz[i]);
+        ((*graph)->matriz[i] = NULL);
     }
     free((*graph)->matriz);
+    (*graph)->matriz = NULL;
     free((*graph)->vertices);
+    (*graph)->vertices = NULL;
     free(*graph);
+    (*graph) = NULL;
     return true;
 } 
 
@@ -277,7 +283,7 @@ bool menor_peso_graph(GRAPH *graph){
     
     if(peso != INT_MAX)
     {
-        printf("(%i, %i)\n", aresta[0], aresta[1]);
+        //printf("(%i, %i)\n", aresta[0], aresta[1]);
         remove_edge(graph, aresta[0], aresta[1]);
         return true;
     }
@@ -301,11 +307,11 @@ int** adjacency_matrix(GRAPH *graph){
         }
     }
 
-    int** matriz = malloc(graph->numVertices*sizeof(int*));
+    int** matriz = (int**) malloc(graph->numVertices*sizeof(int*));
 
     for(int i = 0; i<graph->numVertices; i++)
     {
-        matriz[i] = malloc(graph->numVertices*sizeof(int));
+        matriz[i] = (int*) malloc(graph->numVertices*sizeof(int));
     }
 
     for(int i = 0; i<graph->numVertices; i++)
